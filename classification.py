@@ -17,7 +17,7 @@ import heapq
 minint = -sys.maxsize-1
 
 def loadFullData():  # 读取完整数据
-    with open('./test_correlation1.json', 'r') as f:
+    with open('./correlation/test_correlation1.json', 'r') as f:
         distanceDic = json.load(f)
     points_num = 24
     dis_mat = np.zeros((points_num, points_num))

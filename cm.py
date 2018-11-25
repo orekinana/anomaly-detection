@@ -181,5 +181,5 @@ if __name__ == "__main__":
             pair.calculateMI()
             correlationDic[str(i) + '-' + str(j)] = pair.NMI
             print(str(i) + '-' + str(j), pair.NMI, '\n')
-    with open('realAdExchange_correlation.json','w') as f:
+    with open('correlation/realAdExchange_correlation.json','w') as f:
         json.dump(correlationDic, f)
