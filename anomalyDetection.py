@@ -16,7 +16,7 @@ class anomalyDetection:
 
     def __init__(self, k):
         # create a adjency matrix
-        with open('./realAdExchange_correlation.json','r') as correlationFile:
+        with open('correlation/realAdExchange_correlation.json','r') as correlationFile:
             correlations = json.load(correlationFile)
         pointsNumber = len(os.listdir('./data/realAdExchange/'))
         A = np.zeros([pointsNumber, pointsNumber])
@@ -112,11 +112,13 @@ class anomalyDetection:
         tlist = [i for i in range(self.seriesLen)]
         number = 0
         correct = 0
-        for t in label:
-            # print(R[t] * 5)
-            pointScore = np.dot(v[t], R[t] * 1) + v[t]
+        
+        for t in tlist:
+            
+            pointScore = np.dot(v[t], R[t]) + v[t]
+            # print(np.dot(v[t], R[t] * 200), v[t])
             SystemScore = np.dot(pointScore, w)
-            if SystemScore > 5.22:
+            if SystemScore > 5.17:
 
                 for position in label:
                     if t >= position - 12 and t <= position + 12:
@@ -136,7 +138,8 @@ class anomalyDetection:
         print(number, correct)
 
 def obtianDistribution(values):
-    X = list(map(lambda x:[x], values))
+    # X = list(map(lambda x:[x], values))
+    X = values
     kde = KernelDensity(kernel='gaussian', bandwidth=0.2).fit(X)
     distribution = np.exp(kde.score_samples(X)) / 2
     # print(X[1445], distribution[1445])
@@ -146,14 +149,15 @@ def calculatePointDistribution(dataDir):
     files = os.listdir(dataDir)
     for index in range(len(files)):
         reader = pd.read_csv(dataDir + files[index])
-        # value = list(reader['value'])
-        value = StandardScaler().fit_transform(list(reader['value']))
+        value = list(reader['value'])
+        value = list(map(lambda x:[x], value))
+        value = StandardScaler().fit_transform(value)
         distribution = obtianDistribution(value)
         np.save('./distribution/nowhiting' + str(index) + '.npy', np.array(distribution))
     
 if __name__ == "__main__":
-    # dataDir = './data/realAdExchange/'
-    # calculatePointDistribution(dataDir)
+    dataDir = './data/realAdExchange/'
+    calculatePointDistribution(dataDir)
     model = anomalyDetection(24)
     # print(model.A)
     model.anomalyScore()

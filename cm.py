@@ -53,13 +53,13 @@ class timeSeriesCorrelation:
             Ixy += math.log(jointDistribution[i] + eps)
             Ix += math.log(distribution1[i] + eps)
             Iy += math.log(distribution2[i] + eps)
-           
             
         Hx = Hy = 0
         for i in range(self.seriesLen):
             Hx -= math.log(distribution1[i] + eps)
             Hy -= math.log(distribution2[i] + eps)
         MI = Ixy - (Ix + Iy)
+
         self.NMI = 2 * MI / (Hx + Hy)
 
     def optimalPrediction(self, valueType, observedValue, supportValue = None):
@@ -172,8 +172,8 @@ if __name__ == "__main__":
     correlationDic = {}
     for i in range(len(series)):
         for j in range(len(series)):
-            # if i == j:
-            #     continue
+            if i == j:
+                continue
             observationValue1 = series[i][:1500]
             observationValue2 = series[j][:1500]
             sl = min(len(observationValue1), len(observationValue2))
