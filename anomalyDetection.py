@@ -96,6 +96,20 @@ class anomalyDetection:
             for t in range(self.seriesLen):
                 v[t][i] = self.calculateLLH(t, i)
         return np.array(v)
+
+    def outputAnomaly(self, scoreList, label):
+        scoreList.sort(key=lambda x:x[1])
+        # print(scoreList)
+        number = 0
+        result = []
+        for i in range(1, int(self.seriesLen * 0.05) + 1):
+            for position in label:
+                if scoreList[-i][0] == position:
+                    print('Anomaly line: ', scoreList[-i][0], 'Anomaly score: ', scoreList[-i][1])
+                    number += 1
+            result.append(scoreList[-i][0])
+        print('Total anomaly number: ', number, '\n')
+        return result
                     
     def anomalyScore(self):
         # v = self.informationMassageVector()
@@ -109,33 +123,38 @@ class anomalyDetection:
         R = np.load('./result/R.npy')
         w = np.load('./result/w.npy')
         label = [296, 325, 879, 355, 605, 974, 297, 438, 439, 976, 1013, 1121, 1430, 787, 367, 775, 749, 977, 782, 1276, 1401]
+        label = [[325, 879],[355, 605, 974, 1013],[297, 438, 439, 976, 977],[1121, 1430],[367, 776, 787, 1276],[367, 749, 782, 1276, 1401]]
         tlist = [i for i in range(self.seriesLen)]
         number = 0
         correct = 0
-        
+        score = [[] for i in range(self.pointNumber)]
+        sscore = []
         for t in tlist:
-            
             pointScore = np.dot(v[t], R[t]) + v[t]
-            # print(np.dot(v[t], R[t] * 200), v[t])
             SystemScore = np.dot(pointScore, w)
-            if SystemScore > 5.17:
-
-                for position in label:
-                    if t >= position - 12 and t <= position + 12:
-                        print(t, position)
-                        correct += 1
-                        break
-
-                number += 1
-                starttime = datetime.datetime.strptime("2011-07-01 00", "%Y-%m-%d %H")
-                currenttime = starttime + datetime.timedelta(hours = t)
-                print('date: ', currenttime, ' timeslot: ', t)
-                print('Systerm anomaly score: ' + str(SystemScore) + '\n')
-                # for i in range(self.pointNumber):
-                #     # print('Point ' + str(i) + ' :' + str(pointScore[i]))
-                #     print('Point ' + str(i) + ' :' + str(v[t][i]))
-                print('\n')
-        print(number, correct)
+            for i in range(self.pointNumber):
+                score[i].append([t, pointScore[i]])
+            sscore.append([t, SystemScore])
+        #     if SystemScore > 5.17:
+        #         for position in label:
+        #             if t >= position - 12 and t <= position + 12:
+        #                 print(t, position)
+        #                 correct += 1
+        #                 break
+        #         number += 1
+        #         starttime = datetime.datetime.strptime("2011-07-01 00", "%Y-%m-%d %H")
+        #         currenttime = starttime + datetime.timedelta(hours = t)
+        #         print('date: ', currenttime, ' timeslot: ', t)
+        #         print('Systerm anomaly score: ' + str(SystemScore) + '\n')
+        #         for i in range(self.pointNumber):
+        #             print('Point ' + str(i) + ' :' + str(pointScore[i]))
+        #         print('\n')
+        # print(number, correct)
+        detectResult = []
+        for i in range(self.pointNumber):
+            detectResult.extend(self.outputAnomaly(score[i], label[i]))
+        print(len(set(detectResult)))
+        # self.outputAnomaly(sscore, label)
 
 def obtianDistribution(values):
     # X = list(map(lambda x:[x], values))
@@ -156,8 +175,8 @@ def calculatePointDistribution(dataDir):
         np.save('./distribution/nowhiting' + str(index) + '.npy', np.array(distribution))
     
 if __name__ == "__main__":
-    dataDir = './data/realAdExchange/'
-    calculatePointDistribution(dataDir)
+    # dataDir = './data/realAdExchange/'
+    # calculatePointDistribution(dataDir)
     model = anomalyDetection(24)
     # print(model.A)
     model.anomalyScore()
